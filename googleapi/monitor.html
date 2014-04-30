@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+ <title>Email monitor Client Side</title>
+   
+  </head>
+
+  <body>
+     <script>
+        var apiKey ='AIzaSyCpXfcp4Y6nD0vjBNUa8gq5WVRE_8ikcoE';
+        var clientId = '607824892903.apps.googleusercontent.com';
+        var scopes = 'https://apps-apis.google.com/a/feeds/compliance/audit/';
+        var config = {
+          'client_id': '607824892903.apps.googleusercontent.com',
+          'scope': 'https://apps-apis.google.com/a/feeds/compliance/audit/',
+          'immediate': true
+        };
+        
+    //initialize the auth client
+     // gapi.load(‘auth’, init);
+
+    // Use a button to handle authentication the first time.
+      function handleClientLoad() {
+        gapi.client.setApiKey(apiKey);
+        window.setTimeout(checkAuth,1);
+      }
+
+      function checkAuth() {
+        gapi.auth.authorize(config, handleAuthResult);
+      }
+
+
+      function handleAuthResult(authResult) {
+        var authorizeButton = document.getElementById('authorize-button');
+        if (authResult && !authResult.error) {
+          authorizeButton.style.visibility = 'hidden';
+          makeApiCall();
+        } else {
+          authorizeButton.style.visibility = '';
+          authorizeButton.onclick = handleAuthClick;
+        }
+      }
+
+      function handleAuthClick(event) {
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
+        return false;
+      }
+      //CORS Request
+      // Create the XHR object.
+function createCORSRequest(method, url) {
+  var xhr = new XMLHttpRequest();
+  if ("withCredentials" in xhr) {
+    // XHR for Chrome/Firefox/Opera/Safari.
+    xhr.open(method, url, true);
+  } else if (typeof XDomainRequest != "undefined") {
+    // XDomainRequest for IE.
+    xhr = new XDomainRequest();
+    xhr.open(method, url);
+  } else {
+    // CORS not supported.
+    xhr = null;
+  }
+  return xhr;
+}
+
+  // Make an API call.
+function makeApiCall() {
+  var oauthToken = gapi.auth.getToken();
+ 
+  var url = 'https://apps-apis.google.com/a/feeds/compliance/audit/mail/monitor/usna.edu/ksimpson';
+  
+  var xhr = createCORSRequest('POST', url);
+  if (!xhr) {
+    alert('CORS not supported');
+    return;
+  }
+ 
+ xhr.onload = function() {
+ var responseText = xhr.responseText;
+ console.log(responseText);
+ // process the response.
+};
+
+ xhr.onerror = function() {
+    alert('Woops, there was an error making the request.');
+  };
+ xhr.setRequestHeader('Content-type', 'application/atom+xml');
+ xhr.setRequestHeader('Authorization', 'GoogleLogin auth=' + oauthToken.access_token);                   
+ xhr.send("<?xml version='1.0'?><atom:entry xmlns:atom='http://www.w3.org/2005/Atom' xmlns:apps='http://schemas.google.com/apps/2006'><apps:property name='destUserName' value='ksimpson'/><apps:property name='beginDate' value='2012-11-01 00:00'/><apps:property name='endDate' value='2012-11-28 23:20'/><apps:property name='incomingEmailMonitorLevel' value='FULL_MESSAGE'/><apps:property name='outgoingEmailMonitorLevel' value='HEADER_ONLY'/><apps:property name='draftMonitorLevel' value='FULL_MESSAGE'/><apps:property name='chatMonitorLevel' value='FULL_MESSAGE'/></atom:entry>");
+}
+  </script>
+   <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script> 
+   <!--<script src=”https://apis.google.com/js/api.js”></script>-->
+
+    <div id="content"></div>
+    <h2>EMAIL MONITOR</h2>
+    <button id="authorize-button" style="visibility: hidden">Authorize</button>
+  </body>
+
+</body>
+</html>
+
