@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Visualize photo data in my flickr Account</title>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+    
+    // Load the Visualization API and the piechart package.
+    google.load('visualization', '1', {'packages':['corechart']});
+      
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.setOnLoadCallback(drawChart);
+      
+    function drawChart() {
+        var userID = "72596248%40N00";
+
+       var flickrAPI = "https://api.flickr.com/services/rest/?method=flickr.photosets.getList&api_key=1bde41e395938af8ec86031760c5c89a&user_id=" + userID + "&format=json&jsoncallback=?";
+ 
+      var jsonData = $.ajax({
+          url: flickrAPI,
+          dataType:"json",
+          async: false,
+          processData: true,
+          crossDomain: true
+          }).done(function(data)
+        {
+            var photoDetails = [
+                                ["Photo Set", "Number of Photos"]
+                                ];
+            
+             if(data.stat!='fail') {               
+                //loop through the photosets to get name and number of photos.                
+               $.each(data.photosets.photoset, function(i, photoitem) {
+                 photoDetails.push([photoitem["title"]["_content"], parseInt(photoitem["photos"])]);
+                });
+                var piedata = google.visualization.arrayToDataTable(photoDetails,false);
+                
+                // Instantiate and draw our chart, passing in some options.
+                var chart = new google.visualization.PieChart(document.getElementById('visualize'));
+                chart.draw(piedata, {"title":"Number Photos in my Photo Sets", width: 900, height: 500});
+            }
+        });
+       
+      
+    }
+
+    </script>
+</head>
+
+<body>
+<div id="visualize"></div>
+</body>
+</html>
