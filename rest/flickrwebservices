@@ -1,0 +1,46 @@
+<?php
+//$api_url_xml_feed = "https://api.flickr.com/services/rest/?method=flickr.photosets.getList&api_key=6375c8ac32868caeb03ee726b9fe8b5d&user_id=49251707%40N07&per_page=30&primary_photo_extras=date_upload%2C+url_m%2C+&format=rest";
+$api_url_xml_feed = "https://api.flickr.com/services/rest/?method=flickr.photosets.getPhotos&api_key=faf40ab08fc2afd555858bc369d3bf19&photoset_id=72157643649946363&extras=path_alias%2C+date_upload%2C+url_m%2C+url_l&per_page=45&media=photos&format=rest";
+$ch = curl_init($api_url_xml_feed);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
+$response = curl_exec($ch);
+if ($response !== false) {
+  $responsexml = new SimpleXMLElement($response);
+  $responseStat = $responsexml->attributes();
+
+  if ($responseStat['stat'] == "ok") {
+    $set_id = 72157643649946363;
+    $photoset = $responsexml->photoset->children();
+
+    /*Displays the latest set*/
+   /* $setId = $photoset[0]['id'];
+    $title =  $photoset[0]->title;
+    $description =  $photoset[0]->description;
+    echo "<h3>$title</h3>";
+    echo "<p>Set id $setId</p>";
+    echo "<p>Description: $description</p>";    */
+   
+   /*Display the photo set.*/
+    $photosetAttributes = $responsexml->photoset->attributes();
+    $pathAlias = (string) $photoset->photo[0]->attributes()->pathalias;
+    echo "<h2>Flickr Gallery: ". $photosetAttributes['title']."</h2>";
+    echo "<h3>Flickr URL: <a href=\"https://www.flickr.com/photos/$pathAlias/sets/$set_id\">URL</a></h3>";
+    foreach($photoset->photo as $photo) {
+        $title =  $photo['title'];
+        $url_l =  $photo['url_l'];
+        $url_m =  $photo['url_m'];
+        $width =  $photo['width_m'];
+        $height = $photo['height_m'];
+        echo "<p><a href=\"$url_l\" class=\"fancybox\" rel=\"gallery\"><img alt=\"$title\" src=\"$url_m\" /></a></p>";
+    }
+} else {
+   $err = $responsexml->children();
+   $errMsg= $err->err->attributes()->msg;
+   echo $errMsg;
+}
+} else {
+    echo "curl exec returned false";
+}
+?>
